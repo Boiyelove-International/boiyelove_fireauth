@@ -1,6 +1,22 @@
+import 'dart:developer';
+
+import 'package:boiyelove_fireauth/screens/login.dart';
+import 'package:boiyelove_fireauth/screens/profile.dart';
+import 'package:boiyelove_fireauth/screens/register.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  // Ideal time to initialize
+  // await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
   runApp(const MyApp());
 }
 
@@ -24,7 +40,13 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      debugShowCheckedModeBanner: false,
+      home: const RegisterScreen(),
+      routes: {
+        "/login": (context) => const LoginScreen(),
+        "/register": (context) => const RegisterScreen(),
+        "/profile": (context) => const ProfileScreen(),
+      },
     );
   }
 }
@@ -49,6 +71,20 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    FirebaseAuth.instance.userChanges().listen((User? user) {
+      if (user == null) {
+        Navigator.of(context).pushReplacementNamed("/login");
+      } else {
+        log("running homepage user auth changes");
+        Navigator.of(context).pushReplacementNamed("/profile");
+      }
+    });
+    super.initState();
+  }
 
   void _incrementCounter() {
     setState(() {
